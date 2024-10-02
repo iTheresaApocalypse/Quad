@@ -141,7 +141,7 @@ def main():
         if final_chose[i]!=0:
             all_datasets = []
             # get local data
-            with open("./slimpajama/clustering-" + str(i).zfill(5) + ".jsonl", "r", encoding="utf-8") as file:
+            with open("../data/cluster/clustering-" + str(i).zfill(5) + ".jsonl", "r", encoding="utf-8") as file:
                 for line in file:
                     all_datasets.append(json.loads(line))
             final_data = final_data + all_datasets[0:real_batchsize*final_chose[i]]
