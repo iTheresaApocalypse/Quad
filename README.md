@@ -70,9 +70,12 @@ We use the entire 627B-token  [SlimPajama](https://huggingface.co/datasets/cereb
 
 ## Data Selection Pipeline
 
-### Step1:
-
-### Step2:
+### Step1:iHVP calculation on both attention layers and MLP layers
+### Step2:Data Selection via Cluster Score(CS)
+To run step2, you can enter the following command at the terminal
+```bash
+srun --job-name=quad --nodes=1 --gres=gpu:5 python ./quad/quad-data_selection.py
+```
 
 ## Bugs or Questions?
 
