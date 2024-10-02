@@ -1,6 +1,3 @@
-"""
-    This script is used for getting gradients or representations of a pre-trained model, a lora model, or a peft-initialized model for a given task.
-"""
 import random
 import argparse
 import os
@@ -11,11 +8,10 @@ import sys
 from peft import LoraConfig, PeftModel, TaskType, get_peft_model
 from transformers import AutoModelForCausalLM, AutoTokenizer
 import torch.nn as nn
-from collect_grad_reps import (collect_grads, collect_reps, get_loss, project_ihvp)
-from collect_grad_reps_opt import (get_ihvp)
+from K-FAC import get_ihvp
 from get_training_dataset import get_training_dataset
 from get_validation_dataset import (get_dataloader, get_dataset)
-from tool_function import (save_list)
+
 import glob
 '''
 这段代码是一个用于获取预训练模型、LoRA模型或PEFT初始化模型的梯度或表示的脚本。它支持从给定的任务中获取这些信息，包括梯度、表示和损失。以下是代码的详细解释：
@@ -171,13 +167,6 @@ if args.initialize_lora:
 if isinstance(model, PeftModel):
     model.print_trainable_parameters()
 
-adam_optimizer_state = None
-if args.info_type == "grads" and args.gradient_type == "adam":
-    optimizer_path = os.path.join(args.model_path, "optimizer.pt")
-    adam_optimizer_state = torch.load(
-        optimizer_path, map_location="cpu")["state"]
-
-
 if args.task is not None:
     print("validation")
     dataset = get_dataset(args.task,
@@ -212,39 +201,5 @@ else:
 
     dataloader = get_dataloader(dataset, tokenizer=tokenizer, batch_size=1)
 
+get_ihvp(dataloader, model, args.output_path, proj_dim=[8192])
 
-'''
-根据指定的信息类型（梯度、表示或损失），调用相应的函数收集信息并保存到指定路径。
-'''
-if args.info_type == "reps":
-    collect_reps(dataloader, model, args.output_path,
-                 max_samples=args.max_samples)
-elif args.info_type == "grads":
-    '''
-    collect_grads(dataloader,
-                  model,
-                  args.output_path,
-                  proj_dim=args.gradient_projection_dimension,
-                  gradient_type=args.gradient_type,
-                  adam_optimizer_state=adam_optimizer_state,
-                  max_samples=args.max_samples)
-    '''
-
-    get_ihvp(dataloader, model, args.output_path, proj_dim=[8192])
-
-    '''
-        project_ihvp(dataloader,
-                  model,
-                  args.output_path,
-                  proj_dim=args.gradient_projection_dimension,
-                  gradient_type=args.gradient_type,
-                  adam_optimizer_state=adam_optimizer_state,
-                  max_samples = args.max_samples)    
-
-    '''
-
-    
-    
-
-elif args.info_type == "loss":
-    get_loss(dataloader, model, args.output_path)
