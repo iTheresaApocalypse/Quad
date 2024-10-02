@@ -292,10 +292,10 @@ def get_ihvp(dataloader, model, output_dir, proj_dim):
     sys.stdout.flush()
 
     kfac_input_covs, kfac_grad_covs, mlp_blocks = get_ekfac_factors(model, dataloader, device)
+
+    ''' 
     torch.save(kfac_input_covs, 'check/opt_op/kfac_input_covs.pt')
     torch.save(kfac_grad_covs, 'check/opt_op/kfac_grad_covs.pt')
-    ''' 
-
     kfac_input_covs = torch.load("check/opt/kfac_input_covs.pt")
     kfac_grad_covs = torch.load("check/opt/kfac_grad_covs.pt")
     _, _, _, mlp_blocks = create_efkac_factors_and_pseudo_grads(model, device)
@@ -311,12 +311,13 @@ def get_ihvp(dataloader, model, output_dir, proj_dim):
     print("Loading Q List!")
     sys.stdout.flush()
     q_a_list, q_a_t_list, q_s_list, q_s_t_list = get_Q_list(kfac_input_covs, kfac_grad_covs, mlp_blocks)
+
+
+    '''
     torch.save(q_a_list, "check/opt_op/q_a_list.pt")
     torch.save(q_s_list, "check/opt_op/q_s_list.pt")
     torch.save(q_s_t_list, "check/opt_op/q_s_t_list.pt")
     torch.save(q_a_t_list, "check/opt_op/q_a_t_list.pt")
-
-    '''
     q_a_list = torch.load("check/opt/q_a_list.pt")
     q_s_list = torch.load("check/opt/q_s_list.pt")
     q_a_t_list = torch.load("check/opt/q_a_t_list.pt")
@@ -337,9 +338,9 @@ def get_ihvp(dataloader, model, output_dir, proj_dim):
     sys.stdout.flush()
     lambda_ii_avg_list = get_lambda_ii_list(model, device, dataloader, mlp_blocks, q_a_list, q_s_list)
 
-    torch.save(lambda_ii_avg_list, "check/opt_op/lambda_list.pt")
+   
     '''
-
+    torch.save(lambda_ii_avg_list, "check/opt_op/lambda_list.pt")
     lambda_ii_avg_list = torch.load("check/opt/lambda_list.pt")
     '''
 
