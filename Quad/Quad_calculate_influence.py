@@ -42,5 +42,5 @@ def calculate_influence(minibatch,index):
             final_result.append(score[i]/count[i])
     
     print(final_result)
-    with open("/mnt/petrelfs/zhangchi/output" + str(index) + ".json", 'w') as f:
+    with open("./output" + str(index) + ".json", 'w') as f:
         json.dump(final_result,f)
