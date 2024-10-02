@@ -12,7 +12,7 @@ def calculate_influence(minibatch,index):
     device = torch.device("cuda:0")
     dtype = torch.bfloat16
     # load your model here
-    model, tokenizer = load_model("deepseek-ai/deepseek-coder-1.3b-base",dtype)
+    model, tokenizer = load_model("deepseek-ai/deepseek-coder-1.3b-base",dtype) # please change to your own model
     model_gpu = model.to(device)
     print(model_gpu.device)
     grads, chunk_doc_dictionary = get_info(model_gpu, tokenizer, minibatch, device)
