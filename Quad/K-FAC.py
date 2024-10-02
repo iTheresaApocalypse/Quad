@@ -621,7 +621,3 @@ def get_grads_Memory(grads):
 
     memory_size_gb = memory_size / (1024 ** 3)
     return memory_size_gb
-
-if __name__ == "__main__":
-    model, tokenizer = load_model("deepseek-ai/deepseek-coder-1.3b-base",dtype) # please change to your own model
-    get_ihvp(dataloader, model, args.output_path, proj_dim=[8192])
