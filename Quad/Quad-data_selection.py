@@ -43,7 +43,7 @@ def get_cluster_reward(topk):
     for process in processes:
         process.join()
     for index in range(num_gpu):
-        with open("/mnt/petrelfs/zhangchi/output" + str(gpus[index]) + ".json", 'r') as f:
+        with open("./output" + str(gpus[index]) + ".json", 'r') as f:
             data = json.load(f)
         result = result + data
     return result
