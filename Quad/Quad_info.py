@@ -1,6 +1,5 @@
 from Quad_collect_grad import collect_grads
-from get_training_dataset import encode_data
-from get_validation_dataset import get_dataloader
+from get_training_dataset import encode_data, get_dataloader
 from unify_data_format import get_unify_dataset
 from datasets import Dataset
 
