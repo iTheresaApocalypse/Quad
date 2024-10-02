@@ -52,7 +52,7 @@ def return_jsonl_list(path):
 parser = argparse.ArgumentParser(
     description='Script for getting validation gradients')
 parser.add_argument("--train_files", type=str, nargs='*',
-                    default=["data/validation_grad/lambada-266.jsonl"], help="The path of your dataset which needs to calculate ihvp")
+                    default=["data/validation_grad/lambada-266.jsonl"], help="The path of your dataset which needs to calculate ihvp") // please change to you own dataset which needs to calculate ihvp
 parser.add_argument(
     "--info_type", default="grads", choices=["grads", "reps", "loss"], help="The type of information")
 parser.add_argument("--model_path", type=str,
@@ -62,7 +62,7 @@ parser.add_argument("--max_samples", type=int,
 parser.add_argument("--torch_dtype", type=str, default="bfloat16",
                     choices=["float32", "bfloat16"], help="The torch data type")
 parser.add_argument("--output_path", type=str,
-                    default="output_op", help="The path to the output") // please change to your own ihvp stored path
+                    default="../data/validation_grad/", help="The path to the output") // please change to your own ihvp stored path
 parser.add_argument("--gradient_projection_dimension", nargs='+',
                     help="The dimension of the projection, can be a list", type=int, default=[8192])
 parser.add_argument("--gradient_type", type=str, default="sgd",
