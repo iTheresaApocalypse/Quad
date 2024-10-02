@@ -3,25 +3,25 @@ import json
 from tqdm import tqdm
 import multiprocessing as mp
 import random
-from Quad_calculate_influence import calculate_influence
-from Quad_util import get_cluster_neighbour,load_model, sorted_highest_score, sample_minibatch, get_sample_index
+from mab_calculate_influence import calculate_influence
+from mab_util import get_cluster_neighbour,load_model, sorted_highest_score, sample_minibatch, get_sample_index
 
 import os
 
 alpha = 0.0001
 cluster_size = 9873
-batchsize = 10 #从每个cluster中采多少样本,用于估计该簇整体的influence得分
+batchsize = 10 #How many samples to draw from each cluster to estimate the overall influence score of that cluster.
 threshold = 0.2
-batch = 50 #从多少cluster中采样
-num_gpu = 5 #使用多少个gpu并行计算
-real_batchsize = 2000 #从某个簇中真实采样的样本个数
+batch = 50 #How many clusters to sample from
+num_gpu = 5 #How many GPUs to use for parallel computation.
+real_batchsize = 20000 #The number of samples actually drawn from a certain cluster.
 
-cluster_score = {i: 0 for i in range(0, cluster_size)}#每个cluster的reward得分
-cluster_chose = {i: 0 for i in range(0, cluster_size)}#每个cluster被选中了几次（包括邻居被选中）
-cluster_ucb = {i: 0 for i in range(0, cluster_size)}#每个cluster的ucb得分
-cluster_sample = {i: 0 for i in range(0, cluster_size)}#每个cluster真正被采样了几次
-final_chose = {i: 0 for i in range(0, cluster_size)}#最终选择了哪些簇
-forbidden_cluster = []#某个cluster中的数据全部被取走
+cluster_score = {i: 0 for i in range(0, cluster_size)}#The reward score for each cluster.
+cluster_chose = {i: 0 for i in range(0, cluster_size)}#How many times each cluster has been selected (including selections of neighboring clusters)
+cluster_ucb = {i: 0 for i in range(0, cluster_size)}#The Cluster Score(CS) for each cluster
+cluster_sample = {i: 0 for i in range(0, cluster_size)}#The actual number of times each cluster has been sampled
+final_chose = {i: 0 for i in range(0, cluster_size)}#Which clusters were ultimately selected
+forbidden_cluster = []#All the data from a certain cluster has been taken
 sum_chose = 0
 
 
@@ -64,7 +64,7 @@ def step1(k):
                 loopindex = loopindex + 1
             flag, minibatch = get_sample_index(sample_index, real_batchsize, cluster_sample)
             if flag == False:
-                #簇中所有样本都被采过
+                #If all samples in the cluster have been sampled
                 cluster_score[sample_index] = -9999999
                 cluster_ucb[sample_index] = -9999999
         merged_minibatch = merged_minibatch + minibatch
@@ -79,11 +79,11 @@ def step2(topk):
     averages = []
     for i in range(0, len(reward), batchsize):
         part = reward[i:i+batchsize]
-        if part:  # 防止出现空部分
+        if part:  # To prevent empty sections from occurring
             if len(part) == 0:
                 averages.append(avg)
             else:
-                avg = sum(part) / len(part)-0.0015
+                avg = sum(part) / len(part)-0.0020
                 averages.append(avg)
     print(averages)
     return averages
@@ -94,16 +94,16 @@ def step3(topk, cluster_neighbour, cluster_distance, averages, final_sum_chose, 
         for key, value in i_dict.items():
             i = int(key)
             cluster_sample[i] += 1
-        if averages[idict_index] > 0:#某个簇对模型效果产生足够大的正向影响
+        if averages[idict_index] > 0:#Cluster has a sufficiently large positive impact on the model's performance.
             final_chose[i] += 1
             final_sum_chose += 1
             sum_average += averages[idict_index]
-        for cluster in cluster_neighbour[i]:#更新每个cluster的reward
+        for cluster in cluster_neighbour[i]:#Update the reward for each cluster
             sum_chose += 1
             cluster_score[cluster] += averages[idict_index]*(1-cluster_distance[(i,cluster)]/threshold)
             cluster_chose[cluster] += 1
         idict_index = idict_index + 1
-    for key in cluster_ucb.keys():#更新ucb的值
+    for key in cluster_ucb.keys():#Update the cluster score
         if cluster_chose[key] != 0:
             cluster_average_reward = cluster_score[key]/cluster_chose[key]
         else:
@@ -120,15 +120,15 @@ def main():
     cluster_neighbour, cluster_distance = get_cluster_neighbour(cluster_size, threshold)
     sum_chose = 0
     for k in tqdm(range(iteration)):
-        # step1 取mini-batch数据
+        # step1 get mini-batch data
         topk = step1(k)
-        # step2 计算influence score
+        # step2 calculate influence score
         averages = step2(topk)
 
-        # step3 更新ucb score
+        # step3 update ucb score
         final_sum_chose, sum_average, sum_chose = step3(topk, cluster_neighbour, cluster_distance, averages, final_sum_chose, sum_average, sum_chose)
         
-        if final_sum_chose*real_batchsize >= 5000000:
+        if final_sum_chose*real_batchsize >= 10000000:
             break
         print(float(sum_average/final_sum_chose))
         print(cluster_sample)
@@ -140,13 +140,13 @@ def main():
     for i in tqdm(range(cluster_size)):
         if final_chose[i]!=0:
             all_datasets = []
-            # 本地取数据
-            with open("/mnt/hwfile/opendatalab/zhangchi/slimpajama/clustering-" + str(i).zfill(5) + ".jsonl", "r", encoding="utf-8") as file:
+            # get local data
+            with open("./slimpajama/clustering-" + str(i).zfill(5) + ".jsonl", "r", encoding="utf-8") as file:
                 for line in file:
                     all_datasets.append(json.loads(line))
             final_data = final_data + all_datasets[0:real_batchsize*final_chose[i]]
     random.shuffle(final_data)
-    with open('/mnt/petrelfs/zhangchi/slimpajama-mab-selected_data-0_003.jsonl', 'w') as file:
+    with open('./Quad-selected_data.jsonl', 'w') as file:
         for item in final_data:
             json.dump(item, file)
             file.write('\n')
