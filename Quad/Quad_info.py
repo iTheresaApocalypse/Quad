@@ -7,7 +7,7 @@ from datasets import Dataset
 
 
 
-def get_info(model, tokenizer, minibatch, device, max_seq_length=2048):
+def get_info(model, tokenizer, minibatch, device, max_seq_length=1024):
     # pad token is not added by default for pretrained models
     if tokenizer.pad_token is None:
         tokenizer.add_special_tokens({"pad_token": "<pad>"})
