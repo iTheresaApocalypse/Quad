@@ -3,8 +3,8 @@ import json
 from tqdm import tqdm
 import multiprocessing as mp
 import random
-from mab_calculate_influence import calculate_influence
-from mab_util import get_cluster_neighbour,load_model, sorted_highest_score, sample_minibatch, get_sample_index
+from Quad_calculate_influence import calculate_influence
+from Quad_util import get_cluster_neighbour,load_model, sorted_highest_score, sample_minibatch, get_sample_index
 
 import os
 
