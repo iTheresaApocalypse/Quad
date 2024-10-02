@@ -68,3 +68,12 @@ def encode_data(raw_datasets, tokenizer, max_seq_length):
         for result in gen:
             tokenized_list.append(result)
     return tokenized_list
+
+def get_dataloader(dataset, tokenizer, batch_size=1):
+    data_collator = DataCollatorForSeq2Seq(
+            tokenizer=tokenizer, padding="longest") 
+    dataloader = DataLoader(dataset,
+                            batch_size=batch_size,  # When getting gradients, we only do this single batch process
+                            collate_fn=data_collator)
+    print("There are {} examples in the dataset".format(len(dataset)))
+    return dataloader
