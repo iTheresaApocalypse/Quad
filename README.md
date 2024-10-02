@@ -19,7 +19,31 @@ The python core library files required for Quad are as follows:
 - nvcc                     11.7
 - trak                     0.3.2
 
-##  Kindly Regard: How to install TRAK?
+## Data Preparation
+
+We use the entire 627B-token  [SlimPajama](https://huggingface.co/datasets/cerebras/SlimPajama-627B)  dataset as the candidate pool . In the clustering process, the [BAAI/bge-large-en-v1.5]( https://huggingface.co/BAAI/bge-large-en-v1.5 ) model is employed to generate embeddings for the input data, and approximately 600 million data points from the candidate pool are clustered into 10,000 groups using the k-means algorithm. We use [LAMBADA](https://huggingface.co/datasets/cimec/lambada) as our reference set, which is a widely used language modeling task and often serves as a validation benchmark for language model pre-training.
+
+## Data Selection Pipeline
+
+### Step1:iHVP calculation on both attention layers and MLP layers
+To run step1, you can enter the following command at the terminal
+```bash
+srun --job-name=quad --nodes=1 --gres=gpu:5 python ./quad/ihvp_get_info.py
+```
+> **Note**
+>
+> You need to confirm your **model path**, **dataset path** which you use to calculate ihvp, and the **output path** where stores ihvp results in **ihvp_get_info.py**.
+> 
+> You need to confirm your **validation_path(the path where your ihvp is stored)** in **Quad_matching.py**.
+
+### Step2:Data Selection via Cluster Score(CS)
+To run step2, you can enter the following command at the terminal
+```bash
+srun --job-name=quad --nodes=1 --gres=gpu:5 python ./quad/quad-data_selection.py
+```
+
+
+###  Kindly Regard: How to install TRAK?
 
 First, make sure you have installed all the python core library files except TRAK.
 
@@ -63,19 +87,6 @@ trak.test_install(use_fast_jl=True)  # if you're using the fast version
 
 In addition, you may encounter other difficulties in installing TRAK, please refer to the official TRAK configuration website:
 [https://trak.readthedocs.io/en/latest/install.html](https://trak.readthedocs.io/en/latest/install.html)
-
-## Data Preparation
-
-We use the entire 627B-token  [SlimPajama](https://huggingface.co/datasets/cerebras/SlimPajama-627B)  dataset as the candidate pool . In the clustering process, the [BAAI/bge-large-en-v1.5]( https://huggingface.co/BAAI/bge-large-en-v1.5 ) model is employed to generate embeddings for the input data, and approximately 600 million data points from the candidate pool are clustered into 10,000 groups using the k-means algorithm. We use [LAMBADA](https://huggingface.co/datasets/cimec/lambada) as our reference set, which is a widely used language modeling task and often serves as a validation benchmark for language model pre-training.
-
-## Data Selection Pipeline
-
-### Step1:iHVP calculation on both attention layers and MLP layers
-### Step2:Data Selection via Cluster Score(CS)
-To run step2, you can enter the following command at the terminal
-```bash
-srun --job-name=quad --nodes=1 --gres=gpu:5 python ./quad/quad-data_selection.py
-```
 
 ## Bugs or Questions?
 
